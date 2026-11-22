@@ -1,0 +1,31 @@
+# Example deployment behind Traefik. Copy to compose.yml and adjust host, network and
+# certificate resolver. The service account key lives next to it in secrets/ (not in git).
+services:
+    push-gateway:
+        image: ghcr.io/starchat-irc/push-gateway:latest
+        restart: unless-stopped
+        environment:
+            PUBLIC_URL: https://push.example.org
+            # openssl rand -base64 32. Changing it invalidates every endpoint.
+            GATEWAY_KEY: ${GATEWAY_KEY:?set GATEWAY_KEY in .env}
+            TRUST_PROXY: 'true'
+        secrets:
+            - fcm-service-account.json
+        read_only: true
+        cap_drop: [ALL]
+        security_opt: ['no-new-privileges:true']
+        networks: [traefik]
+        labels:
+            traefik.enable: 'true'
+            traefik.http.routers.push-gateway.rule: Host(`push.example.org`)
+            traefik.http.routers.push-gateway.entrypoints: websecure
+            traefik.http.routers.push-gateway.tls.certresolver: letsencrypt
+            traefik.http.services.push-gateway.loadbalancer.server.port: '8080'
+
+secrets:
+    fcm-service-account.json:
+        file: ./secrets/fcm-service-account.json
+
+networks:
+    traefik:
+        external: true

@@ -1,0 +1,12 @@
+node_modules/
+.env
+.env.*
+*.log
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+
+# Never commit the Firebase key
+secrets/
+*service-account*.json
