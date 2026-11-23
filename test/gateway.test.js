@@ -129,7 +129,7 @@ test('push: FCM results become the status codes Web Push expects', async () => {
     ]);
     await withGateway({ fcm }, async (base, logs) => {
         const id = sealToken(key, fcmToken);
-        assert.equal((await push(base, id)).status, 410);
+        assert.equal((await push(base, id)).status, 404, 'Ergo drops subscriptions only on 404');
         const throttled = await push(base, id);
         assert.equal(throttled.status, 429);
         assert.equal(throttled.headers.get('retry-after'), '30');

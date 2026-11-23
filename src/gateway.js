@@ -195,8 +195,9 @@ export function createGateway({ key, publicUrl, fcm, trustProxy = false, now = D
                 send(response, 201);
                 break;
             case 'unregistered':
-                // The app was removed or its token renewed: the IRC server drops the subscription
-                send(response, 410);
+                // The app was removed or its token renewed. 404, not 410: Ergo only drops a
+                // subscription on 404 and would keep pushing for weeks otherwise
+                send(response, 404);
                 break;
             case 'throttled':
                 send(response, 429, null, { 'retry-after': String(result.retryAfter) });

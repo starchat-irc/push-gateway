@@ -31,7 +31,7 @@ The gateway cannot read the pushes and stores nothing: no database, no token lis
 | `429` | `{ "error": "rate_limited" }` | 30 registrations per 10 minutes and address. `Retry-After` says when. |
 | `502`, `503` | `{ "error": "fcm_unavailable" }` | FCM could not check the token, try again later. |
 
-Answers carry `Access-Control-Allow-Origin: *`, so the app can call it from its web view. There is nothing to unregister: when the app deletes its FCM token, the next push answers `410` and the IRC server drops the subscription.
+Answers carry `Access-Control-Allow-Origin: *`, so the app can call it from its web view. There is nothing to unregister: when the app deletes its FCM token, the next push answers `404` and the IRC server drops the subscription.
 
 ### `POST /push/<id>`
 
@@ -41,8 +41,7 @@ Called by the IRC server, as described in RFC 8030. Needs `Content-Encoding: aes
 |--------|---------|
 | `201` | Handed to FCM. |
 | `400` | Empty body, or FCM refused the message. |
-| `404` | Unknown endpoint, for example after the gateway key changed. |
-| `410` | FCM no longer knows the token. The IRC server should drop the subscription. |
+| `404` | Unknown endpoint, for example after the gateway key changed, or FCM no longer knows the token. The IRC server should drop the subscription. RFC 8030 also allows `410` here, but Ergo drops a subscription only on `404`. |
 | `413` | Body over 4096 bytes, or too large for FCM: FCM takes 4096 bytes of data, so the body may have at most 2994 bytes. |
 | `415` | Not `aes128gcm`. |
 | `429` | More than 60 pushes in a burst to one device (one per second after that), or FCM quota. `Retry-After` says when. |
